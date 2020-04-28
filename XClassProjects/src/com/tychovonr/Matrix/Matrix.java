@@ -1,9 +1,31 @@
 package com.tychovonr.Matrix;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 public class Matrix {
     double matrix[][];
     int col;
+    int row;
+
+    public int getBlankRow() {
+        return blankRow;
+    }
+
+    public void setBlankRow(int blankRow) {
+        this.blankRow = blankRow;
+    }
+
+    public int getBlankCol() {
+        return blankCol;
+    }
+
+    public void setBlankCol(int blankCol) {
+        this.blankCol = blankCol;
+    }
+
+    int blankRow;
+    int blankCol;
 
     public int getCol() {
         return col;
@@ -13,7 +35,7 @@ public class Matrix {
         return row;
     }
 
-    int row;
+
     public Matrix(int col, int row) {
         this.col = col;
         this.row = row;
@@ -45,6 +67,8 @@ public class Matrix {
     }
     public Matrix matrixDupe(Matrix m){
         Matrix dupM = new Matrix(this.col,this.row);
+        dupM.setBlankCol(this.getBlankCol());
+        dupM.setBlankRow(this.getBlankRow());
         for (int i = 0; i < this.col ; i++) {
             for (int j = 0; j < this.row; j++) {
                 dupM.matrix[i][j] = m.matrix[i][j];
@@ -53,26 +77,25 @@ public class Matrix {
         return dupM;
     }
     public Matrix switchRows (int firstRow, int secondRow){
-        Queue<Double> tempQ = new LinkedList<>();
         Matrix switchM = matrixDupe(this);
-        for (int i = 0; i < this.matrix[firstRow].length ; i++) {
-            switchM.setEntry(firstRow,i,this.matrix[secondRow][i]);
-            switchM.setEntry(secondRow,i,this.matrix[firstRow][i]);
+        for (int i = 0; i < switchM.getCol() ; i++) {
+            switchM.setEntry(i,firstRow,this.getEntry(i,secondRow));
+            switchM.setEntry(i,secondRow,this.getEntry(i,firstRow));
         }
         return switchM;
     }
     public Matrix linearComboRows(double scalar, int firstRow, int secondRow){
         Matrix comboM  = this;
         comboM = comboM.scalarTimesRow(scalar,firstRow);
-        for (int i = 0; i <matrix[firstRow].length ; i++) {
-            comboM.matrix[secondRow][i] += comboM.matrix[firstRow][i];
+        for (int i = 0; i <comboM.getCol() ; i++) {
+            comboM.matrix[i][secondRow] += comboM.matrix[i][firstRow];
         }
         comboM = comboM.scalarTimesRow(1/scalar,firstRow);
 
         return comboM;
     }
     public Matrix scalarTimesRow(double scalar, int rowNumber){
-        Matrix scalM = matrixDupe(this);
+        Matrix scalM = this;
         for (int i = 0; i <matrix[rowNumber].length ; i++) {
             scalM.matrix[rowNumber][i] *= scalar;
         }
@@ -87,12 +110,68 @@ public class Matrix {
         }
         return dProd;
     }
+    public boolean oopsAllZeroes(double[] row){
+        for (int i = 0; i <row.length ; i++) {
+            if(row[i] != 0.0){
+                return false;
+            }
+        }
+        return true;
+    }
+    public Matrix sortZeroes(){
+        Matrix m = this;
+        int swapcounter = 0;
+        for (int i = 0; i <m.getRow() ; i++) {
+            if (oopsAllZeroes(m.Row(m.getRow()-i-1))==true){
+                m = m.switchRows(m.getRow()-i-1, m.getRow()-swapcounter-1);
+                swapcounter++;
+            }
+        }
+        m.setBlankRow(swapcounter);
+        return m;
+    }
+    public Matrix rowReduce(){
+        Matrix m = this;
+        m = m.sortZeroes();
+        System.out.println(m.toString());
+        int offset = 0;
+            for (int i = 0; i < m.getCol(); i++) {
+                for (int j = 0; j < m.getCol(); j++) {
+                    if (offset + j < m.getCol()) {
+                        if (m.getEntry(j, j) != 0) {
+                            m = m.scalarTimesRow((1 / m.getEntry(j, j)), j);
+                        } else if (oopsAllZeroes(m.Col(j))) {
+                            offset++;
+                        }else {
+                            m = m.switchRows(j, m.getCol() -m.getBlankCol());
+                            j--;
+                        }
+                    }
+                    System.out.println(m.toString());
+                }
+                for (int j = i + 1; j < m.getCol(); j++) {
+                    if (m.getEntry(i, j) != 0.0) {
+                        m = m.linearComboRows(-m.getEntry(i, j), i, j);
+                        System.out.println(m.toString());
+                    }
+                }
+
+            }
+        return m;
+    }
     double[] Col (int index){
-        double[] col = new double[this.matrix.length];
+        double[] col = new double[this.getRow()];
         for (int i = 0; i <col.length ; i++) {
-            col[i] = this.matrix[i][0];
+            col[i] = this.matrix[index][i];
         }
         return col;
+    }
+    double[] Row (int index){
+        double[] row = new double[this.getCol()];
+        for (int i = 0; i <row.length ; i++) {
+            row[i] = this.getEntry(i,index);
+        }
+        return row;
     }
     public Matrix times (Matrix m){
         Matrix prodM = new Matrix(this.col,m.row);
@@ -107,60 +186,82 @@ public class Matrix {
     public Matrix invert (){
         Matrix m = this;
         Matrix id = idMatrix(m.col);
-        for (int i = 0; i <m.col ; i++) {
-            for (int j = 0; j < m.col; j++) {
-                id = id.scalarTimesRow((1/m.getEntry(j,j)),j);
-                m = m.scalarTimesRow((1/m.getEntry(j,j)),j);
-            }
-            for (int j = i+1; j <m.col ; j++) {
-                id = id.linearComboRows(-m.getEntry(j,i), i,j );
-                m = m.linearComboRows(-m.getEntry(j,i), i,j );
+        if (m.ComplexDeterminant()!= 0) {
+            for (int i = 0; i < m.col; i++) {
+                for (int j = 0; j < m.col; j++) {
+                    id = id.scalarTimesRow((1 / m.getEntry(j, j)), j);
+                    m = m.scalarTimesRow((1 / m.getEntry(j, j)), j);
+                }
+                for (int j = i + 1; j < m.col; j++) {
+                    if (m.getEntry(j, i) != 0.0) {
+                        id = id.linearComboRows(-m.getEntry(j, i), i, j);
+                        m = m.linearComboRows(-m.getEntry(j, i), i, j);
+                    }
+                }
             }
         }
 
-        //should be in row echelon form
-        /*
-        for (int i = 0; i <m.getCol() ; i++) {
-            m = m.linearComboRows(-m.getEntry(i,3), 3,i );
-        }
-        for (int j = 1; j <m.col ; j++) {
-            m = m.scalarTimesRow((1/m.getEntry(j,j)),j);
-        }
-        for (int i = 0; i <m.getCol()-1 ; i++) {
-            m = m.linearComboRows(-m.getEntry(i,2), 2,i );
-        }
-        for (int j = 2; j <m.col ; j++) {
-            m = m.scalarTimesRow((1/m.getEntry(j,j)),j);
-        }
-        for (int i = 0; i <m.getCol()-2 ; i++) {
-            m = m.linearComboRows(-m.getEntry(i,1), 1,i );
-        }
-        for (int j = 1; j <m.col ; j++) {
-            m = m.scalarTimesRow((1/m.getEntry(j,j)),j);
-        }
-
-         */
         for (int i = m.getCol()-1; i > 0 ; i--) {
             for (int j = 0; j <i ; j++) {
-                id = id.linearComboRows(-m.getEntry(j,i), i,j );
-                m = m.linearComboRows(-m.getEntry(j,i), i,j );
+                if (m.getEntry(j,i) != 0){
+                    id = id.linearComboRows(-m.getEntry(j,i), i,j );
+                    m = m.linearComboRows(-m.getEntry(j,i), i,j );
+                }
             }
             for (int j = 1; j <m.getCol() ; j++) {
                 id = id.scalarTimesRow((1/m.getEntry(j,j)),j);
                 m = m.scalarTimesRow((1/m.getEntry(j,j)),j);
             }
         }
-        return m.times(this);
+        return id;
+    }
+    public double SimpleDeterminant(){
+        return this.getEntry(0,0)*this.getEntry(1,1) - this.getEntry(1,0)*this.getEntry(0,1);
     }
     public java.lang.String toString(){
         String mString = "";
-        for (int i = 0; i < col; i++) {
+        for (int i = 0; i < row; i++) {
             mString = mString + "[";
-            for (int j = 0; j < row; j++) {
-                mString = mString + " " + (this.matrix[i][j]) + " ";
+            for (int j = 0; j < col; j++) {
+                mString = mString + " " + (this.getEntry(j,i)) + " ";
             }
             mString = mString + "]\n";
         }
         return mString;
+    }
+    public double ComplexDeterminant(){
+        ArrayList<Matrix> SmallerMatrix = new ArrayList<Matrix>();
+        double det = 0;
+        if (this.col ==2){
+            det = this.SimpleDeterminant();
+            return det;
+        }
+        for (int i = 0; i <this.getCol() ; i++) {
+            if(i%2 == 0){
+                det += this.getEntry(i,0)*this.matrixBreaker(i,0).ComplexDeterminant();
+            }
+            else {
+                det -= this.getEntry(i,0)*this.matrixBreaker(i,0).ComplexDeterminant();
+            }
+        }
+        return det;
+    }
+    public Matrix matrixBreaker(int noCol, int noRow){
+        Matrix smallboy = new Matrix(this.getCol()-1, this.getRow()-1);
+        int altI =0;
+        int altJ =0;
+        for (int i = 0; i <this.getCol() ; i++) {
+            if (i != noCol){
+                for (int j = 0; j <this.getRow() ; j++) {
+                    if (j != noRow){
+                        smallboy.setEntry(altI,altJ, this.getEntry(i,j));
+                        altJ++;
+                    }
+                }
+                altJ = 0;
+                altI++;
+            }
+        }
+        return smallboy;
     }
 }

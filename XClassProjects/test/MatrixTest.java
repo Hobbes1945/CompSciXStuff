@@ -1,5 +1,7 @@
 import com.tychovonr.Matrix.Matrix;
 import org.junit.Test;
+import org.junit.jupiter.api.DynamicTest;
+
 import java.util.Random;
 
 import static org.hamcrest.core.Is.is;
@@ -45,13 +47,16 @@ public class MatrixTest {
     @Test
     public void matrixInvTest(){
         Random gen= new Random();
-        Matrix m = new Matrix(4,4);
+        Matrix m = new Matrix(3,3);
         for (int i = 0; i <m.getCol() ; i++) {
             for (int j = 0; j <m.getRow() ; j++) {
                 m.setEntry(i,j,gen.nextInt(50));
             }
         }
+        System.out.println(m.SimpleDeterminant());
+        System.out.println(m.toString());
         System.out.println(m.invert().toString());
+
     }
     @Test
     public void switchRows() {
@@ -82,5 +87,91 @@ public class MatrixTest {
             }
         }
         System.out.println(m.linearComboRows(4,1, 3));
+    }
+    @Test
+    public void MatrixBreaker() {
+        Random gen= new Random();
+        Matrix m = new Matrix(4, 4);
+
+        for (int i = 0; i < m.getCol(); i++) {
+            for (int j = 0; j < m.getRow(); j++) {
+                m.setEntry(i, j, gen.nextInt(50));
+            }
+        }
+        System.out.println(m.toString());
+        System.out.println(m.matrixBreaker(0,0).matrixBreaker(0,0).SimpleDeterminant());
+    }
+    @Test
+    public void sortZeroes() {
+        Random gen= new Random();
+        Matrix m = new Matrix(6, 8);
+        for (int i = 0; i < m.getCol(); i++) {
+            if (i%2==0){
+                for (int j = 0; j < m.getRow(); j++) {
+                    if (j%2 ==0){
+                        m.setEntry(i, j, gen.nextInt(50));
+                    }
+                    else {
+                        m.setEntry(i,j,0);
+                    }
+                }
+            }
+            else {
+                for (int j = 0; j < m.getRow(); j++) {
+                    m.setEntry(i,j, 0);
+                }
+            }
+        }
+        System.out.println(m.toString());
+        m = m.sortZeroes();
+        System.out.println(m.toString());
+        System.out.println("rows" + m.getBlankRow() + ", cols" + m.getBlankCol());
+    }
+    @Test
+    public void ComplexDeterminant(){
+        Random gen= new Random();
+        Matrix m = new Matrix(4, 4);
+        for (int i = 0; i < m.getCol(); i++) {
+            for (int j = 0; j < m.getRow(); j++) {
+                m.setEntry(i, j, gen.nextInt(50));
+            }
+        }
+        System.out.println(m.toString());
+        System.out.println(m.ComplexDeterminant());
+    }
+    @Test
+    public void TestMatrix(){
+        Random gen = new Random();
+        Matrix m = new Matrix(gen.nextInt(10),gen.nextInt(10));
+        for (int i = 0; i <m.getCol() ; i++) {
+            for (int j = 0; j <m.getRow() ; j++) {
+                m.setEntry(i,j,j);
+            }
+        }
+        System.out.println(m.toString());
+        System.out.println("rows" + m.getRow() + ", cols" + m.getCol());
+    }
+    @Test
+    public void rowReduce() {
+        Random gen = new Random();
+        Matrix m = new Matrix(6, 8);
+        for (int i = 0; i < m.getCol(); i++) {
+            if (i % 2 == 0) {
+                for (int j = 0; j < m.getRow(); j++) {
+                    if (j % 2 == 0) {
+                        m.setEntry(i, j, gen.nextInt(50));
+                    } else {
+                        m.setEntry(i, j, 0);
+                    }
+                }
+            } else {
+                for (int j = 0; j < m.getRow(); j++) {
+                    m.setEntry(i, j, 0);
+                }
+            }
+
+        }
+        System.out.println(m.toString());
+        System.out.println(m.rowReduce());
     }
 }
