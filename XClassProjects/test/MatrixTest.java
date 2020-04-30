@@ -29,7 +29,7 @@ public class MatrixTest {
         Matrix m = new Matrix(2,4);
         for (int i = 0; i <m.getCol() ; i++) {
             for (int j = 0; j <m.getRow() ; j++) {
-                m.setEntry(i,j,i+j);
+                m.setEntry(i,j,i+j+1);
             }
         }
         System.out.println(m.toString());
@@ -53,9 +53,10 @@ public class MatrixTest {
                 m.setEntry(i,j,gen.nextInt(50));
             }
         }
-        System.out.println(m.SimpleDeterminant());
+        System.out.println(m.ComplexDeterminant());
         System.out.println(m.toString());
         System.out.println(m.invert().toString());
+        System.out.println(m.times(m.invert()).MatrixCleaner());
 
     }
     @Test

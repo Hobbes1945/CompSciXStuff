@@ -101,6 +101,16 @@ public class Matrix {
         }
         return scalM;
     }
+    public Matrix times (Matrix m){
+        Matrix dupe  = matrixDupe(this);
+        Matrix prodM = new Matrix(dupe.getRow(),m.getCol());
+        for (int i = 0; i < dupe.getRow() ; i++) {
+            for (int j = 0; j <m.getCol() ; j++) {
+                prodM.setEntry(j,i,dotProduct(dupe.Row(i),m.Col(j)));
+            }
+        }
+        return prodM;
+    }
     public Double dotProduct (double[] col, double[] row){
         double dProd = 0;
         if (col.length == row.length){
@@ -233,16 +243,6 @@ public class Matrix {
             row[i] = this.getEntry(i,index);
         }
         return row;
-    }
-    public Matrix times (Matrix m){
-        Matrix prodM = new Matrix(this.col,m.row);
-        for (int i = 0; i < this.getCol() ; i++) {
-            for (int j = 0; j <m.getRow() ; j++) {
-                double[]mCol = m.Col(j);
-                prodM.setEntry(i,j,dotProduct(this.Col(i),mCol));
-            }
-        }
-        return prodM;
     }
     public Matrix invert (){
         /*
