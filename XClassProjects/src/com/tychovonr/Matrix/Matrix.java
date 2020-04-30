@@ -96,8 +96,8 @@ public class Matrix {
     }
     public Matrix scalarTimesRow(double scalar, int rowNumber){
         Matrix scalM = this;
-        for (int i = 0; i <matrix[rowNumber].length ; i++) {
-            scalM.matrix[rowNumber][i] *= scalar;
+        for (int i = 0; i <scalM.getCol() ; i++) {
+            scalM.setEntry(i,rowNumber, scalM.getEntry(i,rowNumber) * scalar);
         }
         return scalM;
     }
@@ -118,12 +118,29 @@ public class Matrix {
         }
         return true;
     }
+    public int CrunchZeroes(double[] row, int startInd){
+
+        for (int i = startInd; i <row.length ; i++) {
+            if (row[i]!= 0){
+                return i;
+            }
+        }
+        /*
+        for (int i = 0; i <startInd ; i++) {
+            if (row[i] != 0){
+                return i;
+            }
+        }
+
+         */
+        return 0;
+    }
     public Matrix sortZeroes(){
         Matrix m = this;
         int swapcounter = 0;
         for (int i = 0; i <m.getRow() ; i++) {
             if (oopsAllZeroes(m.Row(m.getRow()-i-1))==true){
-                m = m.switchRows(m.getRow()-i-1, m.getRow()-swapcounter-1);
+                m= m.switchRows(m.getRow()-i-1, m.getRow()-swapcounter-1);
                 swapcounter++;
             }
         }
@@ -131,33 +148,77 @@ public class Matrix {
         return m;
     }
     public Matrix rowReduce(){
-        Matrix m = this;
+        Matrix m = matrixDupe(this);
         m = m.sortZeroes();
-        System.out.println(m.toString());
+        ArrayList<int[]> pivots = new ArrayList<>();
         int offset = 0;
-            for (int i = 0; i < m.getCol(); i++) {
-                for (int j = 0; j < m.getCol(); j++) {
-                    if (offset + j < m.getCol()) {
-                        if (m.getEntry(j, j) != 0) {
-                            m = m.scalarTimesRow((1 / m.getEntry(j, j)), j);
-                        } else if (oopsAllZeroes(m.Col(j))) {
-                            offset++;
-                        }else {
-                            m = m.switchRows(j, m.getCol() -m.getBlankCol());
-                            j--;
-                        }
-                    }
-                    System.out.println(m.toString());
+        for (int i = 0; i <m.getRow() ; i++) {
+            if (offset+i< m.getCol()) {
+                //System.out.println("x: " + (i+offset) + " y: " + i);
+                if (m.getEntry(i + offset, i) != 0) {
+                    int[] chords = new int[2];
+                    chords[0] = i+offset;
+                    chords[1] = i;
+                    pivots.add(chords);
+                    m = m.clearDown(i + offset, i);
+                } else if (oopsAllZeroes(m.Col(i + offset))) {
+                    offset++;
+                    i--;
+                } else {
+                    m = m.switchRows(CrunchZeroes(m.Col(i + offset), i), i);
+                    i--;
                 }
-                for (int j = i + 1; j < m.getCol(); j++) {
-                    if (m.getEntry(i, j) != 0.0) {
-                        m = m.linearComboRows(-m.getEntry(i, j), i, j);
-                        System.out.println(m.toString());
-                    }
-                }
-
             }
+        }
+        System.out.println(offset);
+        for (int i = 0; i <pivots.size() ; i++) {
+            m = m.clearUp(pivots.get(pivots.size()-i-1)[0],pivots.get(pivots.size()-i-1)[1]);
+        }
         return m;
+    }
+    public Matrix clearDown(int x, int y){
+        Matrix m = matrixDupe(this);
+        for (int i = 0; i <m.getRow()-y ; i++) {
+            m=m.scalarTimesRow(1/m.getEntry(x,y), y);
+            if (m.getEntry(x, y+i)!= 0) {
+                m = m.linearComboRows(-m.getEntry(x, y + i), y, y+i);
+            }
+        }
+        return m;
+    }
+    public Matrix clearUp(int x, int y){
+        Matrix m = matrixDupe(this);
+        for (int i = 0; i < y; i++) {
+            m=m.scalarTimesRow(1/m.getEntry(x,y), y);
+            if (m.getEntry(x, i)!= 0) {
+                m = m.linearComboRows(-m.getEntry(x,i), y, i);
+            }
+        }
+        return m;
+    }
+    public Matrix idclearDown(Matrix m, int x, int y){
+        Matrix id = matrixDupe(this);
+        for (int i = 0; i <m.getRow()-y ; i++) {
+            id=id.scalarTimesRow(1/m.getEntry(x,y), y);
+            m=m.scalarTimesRow(1/m.getEntry(x,y), y);
+            if (m.getEntry(x, y+i)!= 0) {
+                id = id.linearComboRows(-m.getEntry(x, y + i), y, y+i);
+                m = m.linearComboRows(-m.getEntry(x, y + i), y, y+i);
+            }
+        }
+        return id;
+    }
+    public Matrix idclearUp(Matrix m, int x, int y){
+        Matrix id = matrixDupe(this);
+        for (int i = 0; i < y; i++) {
+            id=id.scalarTimesRow(1/m.getEntry(x,y), y);
+            m=m.scalarTimesRow(1/m.getEntry(x,y), y);
+            if (m.getEntry(x, i)!= 0) {
+                id = id.linearComboRows(-m.getEntry(x,i), y, i);
+                m = m.linearComboRows(-m.getEntry(x,i), y, i);
+            }
+        }
+        return id;
     }
     double[] Col (int index){
         double[] col = new double[this.getRow()];
@@ -175,15 +236,16 @@ public class Matrix {
     }
     public Matrix times (Matrix m){
         Matrix prodM = new Matrix(this.col,m.row);
-        for (int i = 0; i < this.col ; i++) {
-            for (int j = 0; j <m.row ; j++) {
+        for (int i = 0; i < this.getCol() ; i++) {
+            for (int j = 0; j <m.getRow() ; j++) {
                 double[]mCol = m.Col(j);
-                prodM.matrix[i][j] = dotProduct(this.matrix[i], mCol);
+                prodM.setEntry(i,j,dotProduct(this.Col(i),mCol));
             }
         }
         return prodM;
     }
     public Matrix invert (){
+        /*
         Matrix m = this;
         Matrix id = idMatrix(m.col);
         if (m.ComplexDeterminant()!= 0) {
@@ -211,6 +273,37 @@ public class Matrix {
             for (int j = 1; j <m.getCol() ; j++) {
                 id = id.scalarTimesRow((1/m.getEntry(j,j)),j);
                 m = m.scalarTimesRow((1/m.getEntry(j,j)),j);
+            }
+        }
+         */
+        Matrix m = matrixDupe(this);
+        Matrix id = idMatrix(m.col);
+        ArrayList<int[]> pivots = new ArrayList<>();
+        int offset = 0;
+        if (m.ComplexDeterminant() != 0) {
+            for (int i = 0; i < m.getRow(); i++) {
+                if (offset + i < m.getCol()) {
+                    if (m.getEntry(i + offset, i) != 0) {
+                        int[] chords = new int[2];
+                        chords[0] = i + offset;
+                        chords[1] = i;
+                        pivots.add(chords);
+                        id = id.idclearDown(m, i + offset, i);
+                        m = m.clearDown(i + offset, i);
+                    } else if (oopsAllZeroes(m.Col(i + offset))) {
+                        offset++;
+                        i--;
+                    } else {
+                        id = id.switchRows(CrunchZeroes(m.Col(i + offset), i), i);
+                        m = m.switchRows(CrunchZeroes(m.Col(i + offset), i), i);
+                        i--;
+                    }
+                }
+            }
+            System.out.println(offset);
+            for (int i = 0; i < pivots.size(); i++) {
+                id = id.idclearUp(m, pivots.get(pivots.size() - i - 1)[0], pivots.get(pivots.size() - i - 1)[1]);
+                m = m.clearUp(pivots.get(pivots.size() - i - 1)[0], pivots.get(pivots.size() - i - 1)[1]);
             }
         }
         return id;
@@ -263,5 +356,23 @@ public class Matrix {
             }
         }
         return smallboy;
+    }
+    public Matrix MatrixCleaner(){
+        Matrix m = matrixDupe(this);
+        for (int i = 0; i <m.getCol() ; i++) {
+            for (int j = 0; j <m.getRow() ; j++) {
+                m.setEntry(i,j, round(m.getEntry(i,j)));
+            }
+        }
+        return m;
+    }
+    public double round(double num){
+        if (num> -9E-12 && num < 9E-12){
+            num = 0;
+        }
+        if (num-1> -9E-12 && num-1 < 9E-12){
+            num = 1;
+        }
+        return num;
     }
 }

@@ -66,7 +66,9 @@ public class MatrixTest {
                 m.setEntry(i, j, i + j);
             }
         }
+        System.out.println(m);
         System.out.println(m.switchRows(1, 3));
+        System.out.println(m);
     }
     @Test
     public void scalarTimesRows() {
@@ -76,7 +78,9 @@ public class MatrixTest {
                 m.setEntry(i, j, i + j);
             }
         }
+        System.out.println(m);
         System.out.println(m.scalarTimesRow(3, 3));
+        System.out.println(m);
     }
     @Test
     public void linearComboRows() {
@@ -125,7 +129,7 @@ public class MatrixTest {
         System.out.println(m.toString());
         m = m.sortZeroes();
         System.out.println(m.toString());
-        System.out.println("rows" + m.getBlankRow() + ", cols" + m.getBlankCol());
+        System.out.println("rows" + m.getBlankRow());
     }
     @Test
     public void ComplexDeterminant(){
@@ -142,13 +146,16 @@ public class MatrixTest {
     @Test
     public void TestMatrix(){
         Random gen = new Random();
-        Matrix m = new Matrix(gen.nextInt(10),gen.nextInt(10));
+        //Matrix m = new Matrix(gen.nextInt(10)+3,3+gen.nextInt(10));
+        Matrix m = new Matrix(9,5);
         for (int i = 0; i <m.getCol() ; i++) {
             for (int j = 0; j <m.getRow() ; j++) {
-                m.setEntry(i,j,j);
+                m.setEntry(i,j,gen.nextInt(100));
             }
         }
         System.out.println(m.toString());
+        System.out.println(m.rowReduce());
+        System.out.println(m.rowReduce().MatrixCleaner());
         System.out.println("rows" + m.getRow() + ", cols" + m.getCol());
     }
     @Test
