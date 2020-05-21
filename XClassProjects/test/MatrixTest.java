@@ -1,11 +1,10 @@
 import com.tychovonr.Matrix.Matrix;
 import org.junit.Test;
-import org.junit.jupiter.api.DynamicTest;
 
 import java.util.Random;
 
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
+
 public class MatrixTest {
     @Test
     public void idMatrixTest(){
@@ -53,10 +52,10 @@ public class MatrixTest {
                 m.setEntry(i,j,gen.nextInt(50));
             }
         }
-        System.out.println(m.ComplexDeterminant());
+        System.out.println(m.complexDeterminant());
         System.out.println(m.toString());
         System.out.println(m.invert().toString());
-        System.out.println(m.times(m.invert()).MatrixCleaner());
+        System.out.println(m.times(m.invert()).matrixClean());
 
     }
     @Test
@@ -104,7 +103,7 @@ public class MatrixTest {
             }
         }
         System.out.println(m.toString());
-        System.out.println(m.matrixBreaker(0,0).matrixBreaker(0,0).SimpleDeterminant());
+        System.out.println(m.matrixBreaker(0,0).matrixBreaker(0,0).simpleDeterminant());
     }
     @Test
     public void sortZeroes() {
@@ -130,7 +129,6 @@ public class MatrixTest {
         System.out.println(m.toString());
         m = m.sortZeroes();
         System.out.println(m.toString());
-        System.out.println("rows" + m.getBlankRow());
     }
     @Test
     public void ComplexDeterminant(){
@@ -142,7 +140,7 @@ public class MatrixTest {
             }
         }
         System.out.println(m.toString());
-        System.out.println(m.ComplexDeterminant());
+        System.out.println(m.complexDeterminant());
     }
     @Test
     public void TestMatrix(){
@@ -156,7 +154,7 @@ public class MatrixTest {
         }
         System.out.println(m.toString());
         System.out.println(m.rowReduce());
-        System.out.println(m.rowReduce().MatrixCleaner());
+        System.out.println(m.rowReduce().matrixClean());
         System.out.println("rows" + m.getRow() + ", cols" + m.getCol());
     }
     @Test
@@ -181,5 +179,14 @@ public class MatrixTest {
         }
         System.out.println(m.toString());
         System.out.println(m.rowReduce());
+    }
+    @Test
+    public void derive() {
+        double[] poly = new double[4];
+        poly[1] = 3;
+        poly[3] = 2;
+        Matrix m = new Matrix(poly.length,poly.length);
+        double x = m.derive(poly,-1);
+        System.out.println(x);
     }
 }
