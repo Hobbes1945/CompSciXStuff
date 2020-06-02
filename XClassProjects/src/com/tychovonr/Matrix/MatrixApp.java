@@ -12,7 +12,7 @@ public class MatrixApp {
                 s = in.nextLine();
                 int col = Integer.parseInt(s);
 
-                System.out.println("How many cols");
+                System.out.println("How many rows");
                 s = in.nextLine();
                 int row = Integer.parseInt(s);
                 Matrix m = new Matrix(col,row);
@@ -25,8 +25,9 @@ public class MatrixApp {
                     }
                 }
                 System.out.println(m);
-                System.out.println(m.invert().matrixClean());
-                System.out.println(m.complexDeterminant());
+                System.out.println(" Inverted" + "\n" + m.invert());
+                System.out.println("Inverted times Matrix" +"\n"+ m.times(m.invert()).matrixClean());
+                System.out.println("Determinant" + m.complexDeterminant());
             }else if (s.equals("2")){
                 System.out.println("What degree is the polynomial");
                 s = in.nextLine();
@@ -37,12 +38,16 @@ public class MatrixApp {
                     s = in.nextLine();
                     coef[i] = Double.parseDouble(s);
                 }
+                for (int i = 0; i <val ; i++) {
+                    System.out.print(coef[i] + "x^" + i + " + " );
+                }
+                System.out.println("");
                 System.out.println("At what x value");
                 s = in.nextLine();
                 double num = Double.parseDouble(s);
                 Matrix m = new Matrix(coef.length,coef.length);
                 System.out.println(m.vdmMaker(coef,num));
-                System.out.println(m.derive(coef,num));
+                System.out.println("derivative" + m.derive(coef,num));
             }
         }
     }
